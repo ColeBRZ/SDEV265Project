@@ -1,26 +1,29 @@
 import yfinance as yf
 
-ticker = input("")
+ticker = input("Enter a ticker symbol: ")
 
-# Fetch stock information using yfinance
-stock = yf.Ticker(ticker_symbol)
+## Making ticker object
+stock = yf.Ticker(ticker)
 
-# Get stock information
-stock_info = stock.info
+## Contain dataframes for historical price data for weeks and months
+df_week = stock.history(period="1wk")
+df_month = stock.history(period="1mo")
 
-# Access specific data from the stock_info dictionary
-company_name = stock_info['longName']
-stock_price = stock_info['regularMarketPrice']
-# ... add more data points as needed
+## Closing prices returned as pandas dataframes by yfinance
+close_prices_week = df_week["Close"]
+close_prices_month = df_month["Close"]
 
-# Print the retrieved information
-print("Company Name:", company_name)
-print("Stock Price:", stock_price)
+## Loop in selection to prevent error
+while True:
+    selection = input("View data for week or month? ")
 
-########################################
-## Above is practice for the API and its data types.
-########################################
-## Below is all relevant stock information of
-## the users selected ticker
-########################################
-
+    if selection.lower() == "week":
+        print("Historical data for the prior week:")
+        print(close_prices_week)
+        break
+    elif selection.lower() == "month":
+        print("Historical data for the prior month:")
+        print(close_prices_month)
+        break
+    else:
+        print("Invalid")
