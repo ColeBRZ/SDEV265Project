@@ -20,10 +20,12 @@ while True:
     if selection.lower() == "week":
         print("Historical data for the prior week:")
         print(close_prices_week)
+        timeframe = 'week'
         break
     elif selection.lower() == "month":
         print("Historical data for the prior month:")
         print(close_prices_month)
+        timeframe = 'month'
         break
     else:
         print("Invalid")

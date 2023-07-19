@@ -2,16 +2,21 @@
 
 import statsmodels.api as sm
 import statsmodels.tsa.ar_model as ar
+import statsmodels.tsa.arima.model as arima_model
 import matplotlib.pyplot as plt
-from apiconnection import close_prices_week, close_prices_month
+from apiconnection import close_prices_week, close_prices_month, timeframe
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 ## Plot function
 def plot_model_results(model_name, fitted_values_weekly, fitted_values_monthly, close_prices_week, close_prices_month):
     plt.figure()
-    plt.plot(close_prices_week.index[:len(fitted_values_weekly)], close_prices_week[:len(fitted_values_weekly)], label='Close Prices (Weekly)')
-    plt.plot(close_prices_week.index[:len(fitted_values_weekly)], fitted_values_weekly, label=model_name + ' Model (Weekly)')
-    plt.plot(close_prices_month.index[:len(fitted_values_monthly)], fitted_values_monthly, label=model_name + ' Model (Monthly)')
-    plt.plot(close_prices_month.index[:len(fitted_values_monthly)], close_prices_month[:len(fitted_values_monthly)], label='Close Prices (Monthly)')
+    if timeframe == 'week':
+        plt.plot(close_prices_week.index[:len(fitted_values_weekly)], close_prices_week[:len(fitted_values_weekly)], label='Close Prices (Weekly)')
+        plt.plot(close_prices_week.index[:len(fitted_values_weekly)], fitted_values_weekly, label=model_name + ' Model (Weekly)')
+    else:
+        plt.plot(close_prices_month.index[:len(fitted_values_monthly)], fitted_values_monthly, label=model_name + ' Model (Monthly)')
+        plt.plot(close_prices_month.index[:len(fitted_values_monthly)], close_prices_month[:len(fitted_values_monthly)], label='Close Prices (Monthly)')
+
     plt.xlabel('Time')
     plt.ylabel('Price')
     plt.title('Close Prices - ' + model_name + ' Model')
@@ -39,7 +44,7 @@ if selection.lower() == "ar":
 elif selection.lower() == "ma":
     ## MA Model
     lag_order_ma = 3
-    model_ma = sm.OLS(close_prices_week, sm.add_constant(close_prices_week.shift(1)).dropna())
+    model_ma = arima_model.ARIMA(close_prices_week, order=(0, 0, lag_order_ma)) ## There is no MA model in statsmodels library so we will use the ARIMA model restricting it to just its MA component
     model_fit_ma = model_ma.fit()
     print("MA Model:")
     print(model_fit_ma.summary())
@@ -50,8 +55,8 @@ elif selection.lower() == "ma":
 
 elif selection.lower() == "arma":
     ## ARMA Model
-    lag_order_arma = (2, 3) ## ARMA model has both AR and MA values
-    model_arma = sm.tsa.ARMA(close_prices_week, order=lag_order_arma)
+    lag_order_arma = (2, 0, 3)  # ARMA model has both AR and MA values
+    model_arma = SARIMAX(close_prices_week, order=lag_order_arma) ## Issues with ARMA statsmodel datatype so using SARIMAX
     model_fit_arma = model_arma.fit()
     print("ARMA Model:")
     print(model_fit_arma.summary())
